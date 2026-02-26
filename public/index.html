@@ -24,6 +24,10 @@
         <div class="qr-only-box">
             <img id="qr" src="" style="width: 200px; height: 200px; display: block;">
         </div>
+        <div class="join-link-box">
+            <input id="joinLink" readonly>
+            <button onclick="copyJoinLink()" style="background:#ff9800;">نسخ رابط الدخول</button>
+        </div>
 
         <div id="teamList" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;"></div>
     </div>
@@ -31,17 +35,33 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        const joinUrl = `${window.location.origin}/join.html`;
+        document.getElementById("joinLink").value = joinUrl;
+        socket.emit("generateQR", joinUrl);
+
         socket.on("state", s => {
-            if (s.qr) document.getElementById("qr").src = s.qr;
+            // Regenerate QR from current domain so link always works on hosting.
+            socket.emit("generateQR", joinUrl);
             const list = document.getElementById("teamList");
             list.innerHTML = "";
             s.teams.forEach(t => { 
                 list.innerHTML += `<div style="background:white; padding:8px 15px; border-radius:50px; font-weight:bold; font-size:14px;">${t.name}</div>`;
             });
         });
+
+        socket.on("qrCode", qrUrl => {
+            document.getElementById("qr").src = qrUrl;
+        });
+
+        function copyJoinLink() {
+            const linkInput = document.getElementById("joinLink");
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(linkInput.value);
+        }
+
         function saveName() { socket.emit("setContestName", document.getElementById("cInput").value); }
         function startGame() { window.location.href = "board.html"; }
     </script>
-});
 </body>
 </html>

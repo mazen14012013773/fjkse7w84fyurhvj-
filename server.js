@@ -29,11 +29,13 @@ let game = {
   order: [],
   current: null,
   winner: null,
-  qr: ""
+  qr: "",
+  joinUrl: ""
 };
 
 async function makeQR() {
   const url = `${getBaseUrl()}/join.html`;
+  game.joinUrl = url;
   game.qr = await QRCode.toDataURL(url);
 }
 makeQR();

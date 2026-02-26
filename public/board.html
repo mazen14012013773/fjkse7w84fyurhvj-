@@ -7,11 +7,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="site-nav">
-        <a href="index.html">الرئيسية</a>
-        <a href="join.html">دخول الفريق</a>
-        <a href="board.html">لوحة السباق</a>
-    </nav>
     <h1 id="mainTitle" style="color:white; margin-top:10px;">🏁 سباق الفرق</h1>
 
     <div id="board"></div>
@@ -37,7 +32,7 @@
                 board.innerHTML += `
                     <div class="track" style="${isCurrent ? 'border: 3px solid #ffeb3b; background:white;' : ''}">
                         <div class="team-name" style="${isCurrent ? 'background:#e91e63; color:white;' : ''}">${t.name}</div>
-                        <div class="icon" style="bottom:${pos}%">${isCurrent ? '🦄' : '🚀'}</div>
+                        <div class="icon" style="bottom:${pos}%">${isCurrent ? '🚀' : '🦄'}</div>
                     </div>`;
             });
      
@@ -60,7 +55,7 @@ socket.on("state", s => {
                 <div class="team-name" style="${isCurrent ? 'background:#e91e63; color:white;' : ''}">${t.name}</div>
                 
                 <div class="icon" style="bottom:${pos}%">
-                    ${isCurrent ? '🦄' : '🚀'}
+                    ${isCurrent ? '⭐' : '🕊'}
                 </div>
 
                 <div class="start-line">🚩</div>

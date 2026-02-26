@@ -6,7 +6,9 @@
 
 body {
     font-family: "Comic Sans MS", sans-serif;
-    background: linear-gradient(135deg, #ffb300, #ffa99f, #a18cd1);
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.34) 0 12px, transparent 12px 24px),
+      linear-gradient(135deg, #fff3c4, #ffd6cc, #d9c9ff);
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -262,7 +264,9 @@ body.join {
 /* 1. السماح بالشاشة بالنزول إذا كانت العناصر كثيرة */
 body {
     font-family: "Comic Sans MS", sans-serif;
-    background: linear-gradient(135deg, #ffe29f, #ffa99f, #a18cd1);
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.34) 0 12px, transparent 12px 24px),
+      linear-gradient(135deg, #fff1bf, #ffd7cf, #d7c7ff);
     min-height: 100vh; /* تغيير من height إلى min-height */
     display: flex;
     flex-direction: column;
@@ -319,7 +323,9 @@ body {
 /* 1. السماح بالشاشة بالنزول إذا كانت العناصر كثيرة */
 body {
     font-family: "Comic Sans MS", sans-serif;
-    background: linear-gradient(135deg, #ffe29f, #ffa99f, #a18cd1);
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.34) 0 12px, transparent 12px 24px),
+      linear-gradient(135deg, #fff1bf, #ffd7cf, #d7c7ff);
     min-height: 100vh; /* تغيير من height إلى min-height */
     display: flex;
     flex-direction: column;
@@ -539,3 +545,43 @@ body {
 #winnerName { font-size: 70px; font-weight: bold; color: #fff; text-shadow: 0 0 20px #ff9800; }
 
 .confetti { font-size: 40px; margin-top: 20px; }
+
+/* Top navigation across all pages */
+.site-nav {
+    position: sticky;
+    top: 8px;
+    z-index: 900;
+    width: min(960px, calc(100% - 20px));
+    margin: 8px auto 12px;
+    padding: 10px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    align-self: stretch;
+}
+
+.site-nav a {
+    text-decoration: none;
+    color: #3a2f57;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(58, 47, 87, 0.12);
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.site-nav a:hover {
+    transform: translateY(-1px);
+    background: #ffffff;
+}
+
+body.join {
+    justify-content: flex-start;
+}

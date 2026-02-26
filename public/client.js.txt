@@ -1,0 +1,48 @@
+const socket = io();
+
+function roll() {
+  document.getElementById("diceSound")?.play();
+
+  const dice = document.getElementById("dice");
+  const flying = dice.cloneNode(true);
+  flying.classList.add("fly");
+  document.getElementById("diceContainer").appendChild(flying);
+
+  flying.addEventListener("animationend", () => flying.remove());
+
+  socket.emit("roll");
+}
+
+function correct() {
+  document.getElementById("moveSound")?.play();
+  socket.emit("correct");
+}
+
+function reset() {
+  socket.emit("reset");
+}
+
+function lock() {
+  socket.emit("lock");
+}
+
+socket.on("state", s => {
+  const qr = document.getElementById("qr");
+  if (qr) qr.src = s.qr;
+
+  const board = document.getElementById("board");
+  if (!board) return;
+
+  board.innerHTML = "";
+  s.teams.forEach(t => {
+    board.innerHTML += `
+      <div class="track">
+        ${t.name} 🚩 ${"⬜".repeat(t.steps)} ${"⬛".repeat(6-t.steps)} 🏁
+      </div>`;
+  });
+});
+
+socket.on("winner", name => {
+  document.getElementById("winSound")?.play();
+  alert("🏆 الفائز: " + name);
+});

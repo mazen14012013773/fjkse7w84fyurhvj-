@@ -1,0 +1,541 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Comic Sans MS", sans-serif;
+    background: linear-gradient(135deg, #ffb300, #ffa99f, #a18cd1);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden; 
+    padding: 5px;
+}
+
+/* لوحة السباق */
+#board {
+    flex: 1; /* يأخذ المساحة المتاحة فقط ولا يتوسع على حساب الأزرار */
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10px;
+    width: 98%;
+    margin-top: 60px;
+    min-height: 0; 
+}
+
+.track {
+    flex: 1;
+    max-width: 120px;
+    height: 85%; 
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 20px;
+    position: relative;
+    border-bottom: 8px solid #555;
+}
+
+/* البداية والنهاية */
+.start-line, .finish-line {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    display: flex;
+    justify-content: center;
+}
+.start-line { bottom: 5px; font-size: 18px; }
+.finish-line { top: 5px; font-size: 25px; }
+
+.finish-flag { animation: wave 0.8s infinite alternate ease-in-out; display: inline-block; }
+@keyframes wave { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+
+/* السيارة - حجم ذكي جداً */
+.icon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    /* في الآيباد تكون 80px وفي الجوال تصغر تلقائياً */
+    font-size: clamp(35px, 10vh, 80px); 
+    bottom: 0%;
+    transition: bottom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* اسم الفريق فوق المسار */
+.team-name {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: clamp(12px, 2vw, 22px);
+    border: 3px solid #ff9800;
+    white-space: nowrap;
+}
+
+/* منطقة الأزرار - ثابتة ولا تتحرك */
+.controls-container {
+    flex: 0 0 auto; /* يمنع المنطقة من التمدد أو التقلص */
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px 5px;
+    background: rgba(255, 255, 255, 0.3);
+    border-top: 2px solid rgba(255,255,255,0.5);
+}
+
+button {
+    padding: 10px 15px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+}
+
+/* ميديا كويري: تعديلات خاصة للجوالات الصغيرة فقط */
+@media (max-width: 600px) {
+    #board { margin-top: 50px; }
+    .track { height: 75%; } /* تقصير المسار في الجوال لترك مساحة للأزرار */
+    .icon { font-size: 35px; } /* تصغير السيارة إجبارياً في الجوال */
+    .team-name { top: -40px; font-size: 12px; }
+    button { padding: 8px 12px; font-size: 12px; }
+}
+
+
+/* تنسيق شاشة دخول الفرق - توسيط كامل ومربع محدد */
+body.join {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.join .card {
+    background: white;
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 500px; /* عرض المربع */
+    text-align: center; /* توسيط كل الكلام */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.join #title {
+    font-size: clamp(24px, 5vw, 35px);
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.join input {
+    width: 100%;
+    padding: 20px;
+    font-size: 22px;
+    border-radius: 15px;
+    border: 2px solid #eee;
+    text-align: center; /* توسيط النص داخل الخانة */
+    outline: none;
+}
+
+.join button {
+    width: 100%;
+    padding: 20px;
+    font-size: 24px;
+    background: #4caf50; /* لون أخضر جميل للدخول */
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 5px 0 #388e3c;
+}
+
+/* تكبير إضافي للايباد */
+@media (min-width: 768px) {
+    .join .card {
+        max-width: 600px;
+        padding: 60px;
+    }
+    .join input, .join button {
+        font-size: 28px;
+        padding: 25px;
+    }
+}
+
+
+
+
+/* ترتيب الشاشة الرئيسية (index.html) */
+.setup-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    gap: 30px;
+    padding: 20px;
+    width: 100%;
+}
+
+.setup-container h1 {
+    font-size: clamp(30px, 8vw, 50px) !important;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.setup-card {
+    background: white;
+    padding: 30px;
+    border-radius: 30px;
+    width: 90%;
+    max-width: 550px; /* تكبير المربع الأبيض */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.setup-card input {
+    height: 60px;
+    font-size: 22px !important;
+    border-radius: 15px !important;
+    border: 2px solid #eee !important;
+    text-align: center;
+}
+
+.setup-card button {
+    height: 65px;
+    font-size: 24px !important;
+    border-radius: 15px !important;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* ترتيب صندوق الـ QR */
+.qr-only-box {
+    background: white;
+    padding: 20px;
+    border-radius: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#qr {
+    width: 250px !important; /* حجم ثابت وواضح للـ QR */
+    height: 250px !important;
+}
+
+/* ترتيب قائمة الفرق المنضمة */
+#teamList {
+    width: 90%;
+    max-width: 600px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+#teamList div {
+    background: white;
+    padding: 12px 25px !important;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 18px !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    color: #333;
+}
+
+/* 1. السماح بالشاشة بالنزول إذا كانت العناصر كثيرة */
+body {
+    font-family: "Comic Sans MS", sans-serif;
+    background: linear-gradient(135deg, #ffe29f, #ffa99f, #a18cd1);
+    min-height: 100vh; /* تغيير من height إلى min-height */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto; /* السماح بالتمرير العمودي فقط عند الحاجة */
+    overflow-x: hidden; /* منع الهزات الجانبية */
+    padding: 20px 10px;
+}
+
+/* 2. ترتيب الحاوية الرئيسية لتكون مرنة */
+.setup-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 25px;
+    /* حذفنا التوسط الإجباري flex:1 عشان ما يضغط العناصر */
+}
+
+/* 3. تعديل حجم الـ QR وصندوقه لضمان الوضوح */
+.qr-only-box {
+    background: white;
+    padding: 15px;
+    border-radius: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin-top: 10px;
+}
+
+#qr {
+    width: 220px !important;
+    height: 220px !important;
+    display: block;
+}
+
+/* 4. تحسين قائمة الفرق المنضمة */
+#teamList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px;
+    padding-bottom: 30px; /* مساحة في النهاية */
+}
+
+#teamList div {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* 1. السماح بالشاشة بالنزول إذا كانت العناصر كثيرة */
+body {
+    font-family: "Comic Sans MS", sans-serif;
+    background: linear-gradient(135deg, #ffe29f, #ffa99f, #a18cd1);
+    min-height: 100vh; /* تغيير من height إلى min-height */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto; /* السماح بالتمرير العمودي فقط عند الحاجة */
+    overflow-x: hidden; /* منع الهزات الجانبية */
+    padding: 20px 10px;
+}
+
+/* 2. ترتيب الحاوية الرئيسية لتكون مرنة */
+.setup-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 25px;
+    /* حذفنا التوسط الإجباري flex:1 عشان ما يضغط العناصر */
+}
+
+/* 3. تعديل حجم الـ QR وصندوقه لضمان الوضوح */
+.qr-only-box {
+    background: white;
+    padding: 15px;
+    border-radius: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin-top: 10px;
+}
+
+#qr {
+    width: 220px !important;
+    height: 220px !important;
+    display: block;
+}
+
+/* 4. تحسين قائمة الفرق المنضمة */
+#teamList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px;
+    padding-bottom: 30px; /* مساحة في النهاية */
+}
+
+#teamList div {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* تطويل منطقة السباق */
+#board {
+    flex: 1; 
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 15px;
+    width: 98%;
+    margin-top: 80px;
+    margin-bottom: 10px;
+}
+
+.track {
+    flex: 1;
+    max-width: 120px;
+    height: 90%; /* جعل المسار طويلاً جداً للأعلى */
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 40px;
+    position: relative;
+    border-bottom: 15px solid #444; /* قاعدة المسار */
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+}
+
+/* خط البداية والنهاية */
+.start-line, .finish-line {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.start-line {
+    bottom: 10px;
+    border-top: 2px dashed rgba(0,0,0,0.1);
+    font-size: 25px;
+}
+
+.finish-line {
+    top: 10px;
+    border-bottom: 2px dashed rgba(0,0,0,0.2);
+    font-size: 35px;
+}
+
+/* حركة علم النهاية */
+.finish-flag {
+    display: inline-block;
+    animation: wave-flag 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes wave-flag {
+    from { transform: rotate(-15deg); }
+    to { transform: rotate(15deg); }
+}
+
+/* السيارة وتعديل موضعها */
+.icon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(40px, 8vw, 80px); 
+    bottom: 0%; /* تبدأ من الأسفل */
+    transition: bottom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 5;
+}
+
+/* اسم الفريق */
+.team-name {
+    position: absolute;
+    top: -70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 8px 15px;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: clamp(14px, 3vw, 24px);
+    border: 4px solid #ff9800;
+    white-space: nowrap;
+    z-index: 10;
+}
+/* تعديل حاوية المسارات لتسمح بالطول الكامل */
+#board {
+    flex: 1; 
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; /* تثبيت المسارات من الأسفل */
+    gap: 15px;
+    width: 98%;
+    height: 80vh; /* إعطاء ارتفاع إجباري كبير للمنطقة */
+    margin-top: 80px;
+}
+
+.track {
+    flex: 1;
+    max-width: 120px;
+    height: 100%; /* تمديد المسار ليأخذ كل ارتفاع الـ board */
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 40px;
+    position: relative;
+    border-bottom: 15px solid #444;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+}
+
+/* علم النهاية وتنسيقه */
+.finish-line {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 40px;
+    z-index: 2;
+}
+
+/* حركة رفرفة العلم */
+.finish-flag {
+    display: inline-block;
+    animation: wave-animation 1s infinite alternate ease-in-out;
+}
+
+@keyframes wave-animation {
+    0% { transform: rotate(-15deg) scale(1); }
+    100% { transform: rotate(15deg) scale(1.1); }
+}
+
+/* خط البداية */
+.start-line {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 25px;
+    border-top: 2px dashed rgba(0,0,0,0.1);
+}
+
+/* السيارة */
+.icon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 70px;
+    bottom: 0%; /* تبدأ من الصفر */
+    transition: bottom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 5;
+}
+
+/* نافذة التبريكات للفائز */
+#winnerOverlay {
+    display: none; /* مخفية في البداية */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+#winnerOverlay h2 { font-size: 50px; margin-bottom: 20px; color: #ffeb3b; }
+#winnerName { font-size: 70px; font-weight: bold; color: #fff; text-shadow: 0 0 20px #ff9800; }
+
+.confetti { font-size: 40px; margin-top: 20px; }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>لوحة السباق</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 id="mainTitle" style="color:white; margin-top:10px;">🏁 سباق الفرق</h1>
+
+    <div id="board"></div>
+
+    <div class="controls-container">
+        <button onclick="socket.emit('roll')" style="background: #ff5722;">🎲 ارمِ النرد</button>
+        <button onclick="socket.emit('correct')" style="background: #4caf50;">✅ صحيحة</button>
+        <button onclick="socket.emit('wrong')" style="background: #f44336;">❌ خاطئة</button>
+        <button onclick="socket.emit('reset')" style="background: #ff9800;">🔁 إعادة</button>
+        <button onclick="location.href='index.html'" style="background: #607d8b;">⬅ رجوع</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on("state", s => {
+            if(s.contestName) document.getElementById("mainTitle").innerText = "🏁 " + s.contestName;
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+            s.teams.forEach(t => {
+                const isCurrent = s.current && s.current.id === t.id;
+                const pos = (t.steps / 10) * 85; 
+                board.innerHTML += `
+                    <div class="track" style="${isCurrent ? 'border: 3px solid #ffeb3b; background:white;' : ''}">
+                        <div class="team-name" style="${isCurrent ? 'background:#e91e63; color:white;' : ''}">${t.name}</div>
+                        <div class="icon" style="bottom:${pos}%">${isCurrent ? '🦄' : '🚀'}</div>
+                    </div>`;
+            });
+     
+   });
+socket.on("state", s => {
+    if(s.contestName) document.getElementById("mainTitle").innerText = "🏁 " + s.contestName;
+    const board = document.getElementById("board");
+    board.innerHTML = "";
+    s.teams.forEach(t => {
+        const isCurrent = s.current && s.current.id === t.id;
+        // رفعنا النسبة إلى 90 لكي تصل السيارة لآخر المسار فوق
+        const pos = (t.steps / 10) * 90; 
+        
+        board.innerHTML += `
+            <div class="track" style="${isCurrent ? 'border: 3px solid #ffeb3b; background:white;' : ''}">
+                <div class="finish-line">
+                    <span class="finish-flag">🏁</span>
+                </div>
+
+                <div class="team-name" style="${isCurrent ? 'background:#e91e63; color:white;' : ''}">${t.name}</div>
+                
+                <div class="icon" style="bottom:${pos}%">
+                    ${isCurrent ? '🦄' : '🚀'}
+                </div>
+
+                <div class="start-line">🚩</div>
+            </div>`;
+    });
+});
+
+
+    socket.on("winner", name => {
+    const overlay = document.getElementById("winnerOverlay");
+    document.getElementById("winnerName").innerText = name;
+    overlay.style.display = "flex"; // إظهار نافذة التبريكات
+});
+</script>
+
+<div id="winnerOverlay">
+    <h2>🎊 ألــــف مبروك للفائز 🎊</h2>
+    <div id="winnerName">اسم الفريق</div>
+    <div class="confetti">✨🥳🎈🎉</div>
+    <button onclick="location.reload()" style="margin-top:40px; background:#ff9800;">إغلاق وبدء من جديد</button>
+</div>
+</body>
+</html>

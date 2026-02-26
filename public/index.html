@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>التحكم</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="setup-container">
+        <h1 style="font-size: 35px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">السباق التفاعلي 🏁</h1>
+        
+        <div class="setup-card">
+            <input id="cInput" placeholder="أدخل اسم المسابقة" style="width:100%; padding:15px; font-size:20px; margin-bottom:15px; border-radius:12px; border:2px solid #eee; text-align:center;">
+            <button onclick="saveName()" style="background:#2196f3; width:100%; margin-bottom:10px;">💾 حفظ الاسم</button>
+            <button onclick="startGame()" style="background:#4caf50; width:100%;">🚀 انطلاق السباق</button>
+        </div>
+
+        <div class="qr-only-box">
+            <img id="qr" src="" style="width: 200px; height: 200px; display: block;">
+        </div>
+
+        <div id="teamList" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on("state", s => {
+            if (s.qr) document.getElementById("qr").src = s.qr;
+            const list = document.getElementById("teamList");
+            list.innerHTML = "";
+            s.teams.forEach(t => { 
+                list.innerHTML += `<div style="background:white; padding:8px 15px; border-radius:50px; font-weight:bold; font-size:14px;">${t.name}</div>`;
+            });
+        });
+        function saveName() { socket.emit("setContestName", document.getElementById("cInput").value); }
+        function startGame() { window.location.href = "board.html"; }
+    </script>
+});
+</body>
+</html>

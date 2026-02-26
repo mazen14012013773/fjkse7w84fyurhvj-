@@ -1,0 +1,85 @@
+const express = require("express");
+const app = express();
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
+const QRCode = require("qrcode");
+const os = require("os");
+
+app.use(express.static("public"));
+
+const FINISH = 6;
+
+function getIP() {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === "IPv4" && !net.internal) return net.address;
+    }
+  }
+  return "localhost";
+}
+
+let game = {
+  room: Math.random().toString(36).substring(2, 7).toUpperCase(),
+  open: true,
+  teams: [],
+  current: null,
+  winner: null,
+  qr: ""
+};
+
+async function makeQR() {
+  const url = `http://${getIP()}:3000/join.html?room=${game.room}`;
+  game.qr = await QRCode.toDataURL(url);
+}
+makeQR();
+
+io.on("connection", socket => {
+  socket.emit("state", game);
+
+  socket.on("join", data => {
+    if (!game.open || !data.name) return;
+    game.teams.push({ name: data.name, id: socket.id, steps: 0 });
+    io.emit("state", game);
+  });
+
+  socket.on("lock", () => {
+    game.open = false;
+    io.emit("state", game);
+  });
+
+  socket.on("roll", () => {
+    if (!game.teams.length || game.winner) return;
+
+    const teamIndex = Math.floor(Math.random() * game.teams.length);
+    const chosenTeam = game.teams[teamIndex];
+    game.current = chosenTeam;
+
+    io.to(chosenTeam.id).emit("receiveDice");
+  });
+
+  socket.on("correct", () => {
+    if (!game.current || game.winner) return;
+    game.current.steps++;
+    if (game.current.steps >= FINISH) {
+      game.winner = game.current.name;
+      io.emit("winner", game.winner);
+    }
+    io.emit("state", game);
+  });
+
+  socket.on("reset", async () => {
+    game = {
+      room: Math.random().toString(36).substring(2, 7).toUpperCase(),
+      open: true,
+      teams: [],
+      current: null,
+      winner: null,
+      qr: ""
+    };
+    await makeQR();
+    io.emit("state", game);
+  });
+});
+
+http.listen(3000, () => console.log("🎮 اللعبة جاهزة http://localhost:3000"));

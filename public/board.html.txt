@@ -1,0 +1,13 @@
+<body class="cartoon">
+<h1>🏁 السباق</h1>
+<div id="board"></div>
+
+<button onclick="correct()">✅ صحيحة</button>
+<button onclick="reset()">🔁 لعبة جديدة</button>
+
+<audio id="moveSound" src="sounds/move.mp3"></audio>
+<audio id="winSound" src="sounds/win.mp3"></audio>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="client.js"></script>
+</body>

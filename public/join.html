@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="style.css">
+<title>دخول الفريق</title>
+</head>
+<body class="join">
+<div class="card">
+  <h2 id="title">📱 دخول الفريق</h2>
+  <div id="joinBox">
+    <input id="name" placeholder="اسم الفريق">
+    <button onclick="join()">دخول</button>
+  </div>
+  <div id="gameBox" style="display:none;">
+    <div id="dice" style="font-size:80px; display:none;">🎲</div>
+    <h1 id="msg">⏳ في الانتظار</h1>
+    <h2 id="timer"></h2>
+    <button id="answerBtn" onclick="answered()" style="display:none; background:#4caf50;">جاوب</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let countdown = null;
+const diceSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3");
+const failSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2516/2516-preview.mp3");
+
+function join() {
+  const n = document.getElementById("name").value;
+  if (!n) return;
+  socket.emit("join", { name: n });
+  document.getElementById("joinBox").style.display = "none";
+  document.getElementById("gameBox").style.display = "block";
+}
+
+socket.on("receiveDice", (time) => {
+  diceSound.play();
+  document.getElementById("dice").style.display = "block";
+  document.getElementById("msg").innerText = "🔔 دوركم!";
+  document.getElementById("answerBtn").style.display = "block";
+  let t = time;
+  document.getElementById("timer").innerText = "⏱ " + t;
+  clearInterval(countdown);
+  countdown = setInterval(() => {
+    t--; document.getElementById("timer").innerText = "⏱ " + t;
+    if (t <= 0) clearInterval(countdown);
+  }, 1000);
+});
+
+socket.on("noAnswer", () => { failSound.play(); resetUI(); });
+
+socket.on("state", (s) => {
+  document.getElementById("title").innerText = s.contestName;
+  if (!s.current || s.current.id !== socket.id) resetUI();
+});
+
+function resetUI() {
+  document.getElementById("answerBtn").style.display = "none";
+  document.getElementById("dice").style.display = "none";
+  document.getElementById("msg").innerText = "⏳ انتظروا الجولة التالية";
+  clearInterval(countdown);
+}
+
+function answered() {
+  document.getElementById("msg").innerText = "⏳ بانتظار النتيجة";
+  document.getElementById("answerBtn").style.display = "none";
+  clearInterval(countdown);
+}
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <nav class="site-nav">
+        <a href="index.html">الرئيسية</a>
+        <a href="join.html">دخول الفريق</a>
+        <a href="board.html">لوحة السباق</a>
+    </nav>
     <h1 id="mainTitle" style="color:white; margin-top:10px;">🏁 سباق الفرق</h1>
 
     <div id="board"></div>
@@ -22,60 +27,46 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+
         socket.on("state", s => {
-            if(s.contestName) document.getElementById("mainTitle").innerText = "🏁 " + s.contestName;
+            if (s.contestName) document.getElementById("mainTitle").innerText = "🏁 " + s.contestName;
             const board = document.getElementById("board");
             board.innerHTML = "";
+
             s.teams.forEach(t => {
                 const isCurrent = s.current && s.current.id === t.id;
-                const pos = (t.steps / 10) * 85; 
+                // تحدي خط النهاية: طول السباق مبني على 10 خطوات.
+                const pos = (t.steps / 10) * 90;
+
                 board.innerHTML += `
                     <div class="track" style="${isCurrent ? 'border: 3px solid #ffeb3b; background:white;' : ''}">
+                        <div class="finish-line">
+                            <span class="finish-flag">🏁</span>
+                        </div>
+
                         <div class="team-name" style="${isCurrent ? 'background:#e91e63; color:white;' : ''}">${t.name}</div>
-                        <div class="icon" style="bottom:${pos}%">${isCurrent ? '🚀' : '🦄'}</div>
+
+                        <div class="icon" style="bottom:${pos}%">
+                            ${isCurrent ? '🚀' : '🦄'}
+                        </div>
+
+                        <div class="start-line">🚩</div>
                     </div>`;
             });
-     
-   });
-socket.on("state", s => {
-    if(s.contestName) document.getElementById("mainTitle").innerText = "🏁 " + s.contestName;
-    const board = document.getElementById("board");
-    board.innerHTML = "";
-    s.teams.forEach(t => {
-        const isCurrent = s.current && s.current.id === t.id;
-        // رفعنا النسبة إلى 90 لكي تصل السيارة لآخر المسار فوق
-        const pos = (t.steps / 10) * 90; 
-        
-        board.innerHTML += `
-            <div class="track" style="${isCurrent ? 'border: 3px solid #ffeb3b; background:white;' : ''}">
-                <div class="finish-line">
-                    <span class="finish-flag">🏁</span>
-                </div>
+        });
 
-                <div class="team-name" style="${isCurrent ? 'background:#e91e63; color:white;' : ''}">${t.name}</div>
-                
-                <div class="icon" style="bottom:${pos}%">
-                    ${isCurrent ? '⭐' : '🕊'}
-                </div>
+        socket.on("winner", name => {
+            const overlay = document.getElementById("winnerOverlay");
+            document.getElementById("winnerName").innerText = name;
+            overlay.style.display = "flex";
+        });
+    </script>
 
-                <div class="start-line">🚩</div>
-            </div>`;
-    });
-});
-
-
-    socket.on("winner", name => {
-    const overlay = document.getElementById("winnerOverlay");
-    document.getElementById("winnerName").innerText = name;
-    overlay.style.display = "flex"; // إظهار نافذة التبريكات
-});
-</script>
-
-<div id="winnerOverlay">
-    <h2>🎊 ألــــف مبروك للفائز 🎊</h2>
-    <div id="winnerName">اسم الفريق</div>
-    <div class="confetti">✨🥳🎈🎉</div>
-    <button onclick="location.reload()" style="margin-top:40px; background:#ff9800;">إغلاق وبدء من جديد</button>
-</div>
+    <div id="winnerOverlay">
+        <h2>🎊 ألــــف مبروك للفائز 🎊</h2>
+        <div id="winnerName">اسم الفريق</div>
+        <div class="confetti">✨🥳🎈🎉</div>
+        <button onclick="location.reload()" style="margin-top:40px; background:#ff9800;">إغلاق وبدء من جديد</button>
+    </div>
 </body>
 </html>
